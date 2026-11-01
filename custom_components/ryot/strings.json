@@ -1,0 +1,59 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect to Ryot",
+        "description": "Use your Ryot username and password (recommended: the integration logs in again when the session expires), or an API token from Ryot → Settings → Integrations → Create API token (expires after 90 days by default).",
+        "data": {
+          "url": "Ryot URL",
+          "username": "Username",
+          "password": "Password",
+          "api_token": "API token",
+          "verify_ssl": "Verify SSL certificate"
+        },
+        "data_description": {
+          "url": "The address you open Ryot at, e.g. https://ryot.example.com"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Re-authenticate with Ryot",
+        "description": "The credentials for {url} stopped working. Enter a username and password, or a new API token.",
+        "data": {
+          "username": "Username",
+          "password": "Password",
+          "api_token": "API token"
+        }
+      }
+    },
+    "error": {
+      "auth_missing": "Enter a username and password, or an API token.",
+      "invalid_auth": "Ryot rejected these credentials.",
+      "cannot_connect": "Could not reach Ryot at that URL.",
+      "not_ryot": "That URL did not answer like a Ryot server."
+    },
+    "abort": {
+      "already_configured": "This Ryot account is already configured.",
+      "reauth_successful": "Re-authentication was successful.",
+      "wrong_account": "Those credentials belong to a different Ryot user."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "last_workout": { "name": "Last workout" },
+      "last_workout_name": { "name": "Last workout name" },
+      "last_workout_duration": { "name": "Last workout duration" },
+      "last_workout_volume": { "name": "Last workout volume" },
+      "last_workout_calories": { "name": "Last workout calories" },
+      "total_workouts": { "name": "Total workouts" },
+      "workouts": { "name": "Workouts ({days}d)" },
+      "active_days": { "name": "Active days ({days}d)" },
+      "minutes": { "name": "Workout time ({days}d)" },
+      "volume": { "name": "Volume ({days}d)" },
+      "reps": { "name": "Reps ({days}d)" },
+      "distance": { "name": "Distance ({days}d)" },
+      "calories": { "name": "Calories burnt ({days}d)" },
+      "personal_bests": { "name": "Personal bests ({days}d)" },
+      "measurement": { "name": "{name}" }
+    }
+  }
+}
