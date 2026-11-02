@@ -27,9 +27,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: RyotConfigEntry) -> bool
     coordinator = RyotCoordinator(hass, entry, client_from_config(hass, dict(entry.data)))
     await coordinator.async_config_entry_first_refresh()
     entry.runtime_data = coordinator
+    entry.async_on_unload(entry.add_update_listener(_reload_on_options))
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: RyotConfigEntry) -> bool:
     return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+
+
+async def _reload_on_options(hass: HomeAssistant, entry: RyotConfigEntry) -> None:
+    await hass.config_entries.async_reload(entry.entry_id)

@@ -249,9 +249,9 @@ class RyotClient:
             },
         )
 
-    async def get_recent_workouts(self, since: datetime) -> tuple[list[Workout], int]:
-        """Workouts started at or after `since` (newest first), always including
-        the most recent one, plus the all-time workout count."""
+    async def get_recent_workouts(self, since: datetime | None) -> tuple[list[Workout], int]:
+        """Workouts started at or after `since` (newest first; all of them if
+        None), always including the most recent one, plus the all-time count."""
         workouts: list[Workout] = []
         total = 0
         page: int | None = 1
@@ -267,7 +267,7 @@ class RyotClient:
                 break
             batch = await self._workout_details(ids)
             for w in batch:
-                if workouts and w.start < since:
+                if since and workouts and w.start < since:
                     return workouts, total
                 workouts.append(w)
             page = resp["details"].get("nextPage")

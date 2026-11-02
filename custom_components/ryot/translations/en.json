@@ -39,21 +39,79 @@
   },
   "entity": {
     "sensor": {
-      "last_workout": { "name": "Last workout" },
-      "last_workout_name": { "name": "Last workout name" },
-      "last_workout_duration": { "name": "Last workout duration" },
-      "last_workout_volume": { "name": "Last workout volume" },
-      "last_workout_calories": { "name": "Last workout calories" },
-      "total_workouts": { "name": "Total workouts" },
-      "workouts": { "name": "Workouts ({days}d)" },
-      "active_days": { "name": "Active days ({days}d)" },
-      "minutes": { "name": "Workout time ({days}d)" },
-      "volume": { "name": "Volume ({days}d)" },
-      "reps": { "name": "Reps ({days}d)" },
-      "distance": { "name": "Distance ({days}d)" },
-      "calories": { "name": "Calories burnt ({days}d)" },
-      "personal_bests": { "name": "Personal bests ({days}d)" },
-      "measurement": { "name": "{name}" }
+      "last_workout": {
+        "name": "Last workout"
+      },
+      "last_workout_name": {
+        "name": "Last workout name"
+      },
+      "last_workout_duration": {
+        "name": "Last workout duration"
+      },
+      "last_workout_volume": {
+        "name": "Last workout volume"
+      },
+      "last_workout_calories": {
+        "name": "Last workout calories"
+      },
+      "total_workouts": {
+        "name": "Total workouts"
+      },
+      "workouts": {
+        "name": "Workouts ({days}d)"
+      },
+      "active_days": {
+        "name": "Active days ({days}d)"
+      },
+      "minutes": {
+        "name": "Workout time ({days}d)"
+      },
+      "volume": {
+        "name": "Volume ({days}d)"
+      },
+      "reps": {
+        "name": "Reps ({days}d)"
+      },
+      "distance": {
+        "name": "Distance ({days}d)"
+      },
+      "calories": {
+        "name": "Calories burnt ({days}d)"
+      },
+      "personal_bests": {
+        "name": "Personal bests ({days}d)"
+      },
+      "measurement": {
+        "name": "{name}"
+      },
+      "workouts_this_week": {
+        "name": "Workouts this week"
+      },
+      "workouts_this_month": {
+        "name": "Workouts this month"
+      },
+      "weekly_goal_streak": {
+        "name": "Weekly goal streak"
+      },
+      "best_weekly_goal_streak": {
+        "name": "Best weekly goal streak"
+      },
+      "days_since_last_workout": {
+        "name": "Days since last workout"
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Ryot options",
+        "data": {
+          "weekly_goal": "Weekly workout goal"
+        },
+        "data_description": {
+          "weekly_goal": "Workouts per week (Monday to Sunday) that count toward the streak."
+        }
+      }
     }
   }
 }

@@ -19,15 +19,25 @@ Enter the URL you open Ryot at (e.g. `https://ryot.example.com`) and either:
 
 ## Sensors
 
-Polled every 15 minutes. Windows are rolling (last 7 / 30 days from now).
+Polled every 15 minutes; the full workout history is refetched daily, polls in
+between fetch only the last 30 days. Windows are rolling (last 7 / 30 days from
+now). The weekly goal (default 3) is set under the integration's *Configure*.
+
+The `weeks` / `months` history attributes are excluded from the recorder (Ryot
+is their source of truth), so long-term charts read them live. Every sensor has
+a state class, so HA keeps long-term statistics for all of them.
 
 | Sensor | Notes |
 |---|---|
 | Last workout | timestamp of its end; attributes: name, duration, exercises, muscles, reps, volume, calories, PBs |
-| Last workout name / duration / volume / calories | |
+| Last workout name / duration / volume | calories disabled by default |
+| Workouts this week | attributes: `goal`, `remaining`, `weeks` (last 52 weeks: workouts, minutes, volume) |
+| Workouts this month | attribute `months`: every month since your first workout |
+| Weekly goal streak / Best weekly goal streak | consecutive Mon–Sun weeks meeting the goal; the current week counts once met and never breaks the streak while in progress |
+| Days since last workout | |
 | Total workouts | all time |
-| Workouts, Active days, Workout time, Volume, Calories burnt, Personal bests (7d and 30d) | |
-| Reps, Distance (7d and 30d) | disabled by default |
+| Workouts, Active days, Workout time, Volume, Personal bests (7d and 30d) | |
+| Reps, Distance, Calories burnt (7d and 30d) | disabled by default |
 | One sensor per measurement statistic (Weight, Body fat, …) | created when a value first appears; latest value in the past year |
 
 Volume is Σ reps × weight. Units follow your Ryot unit system (kg/km or lb/mi);

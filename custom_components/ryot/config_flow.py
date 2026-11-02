@@ -8,13 +8,21 @@ from typing import Any
 
 import voluptuous as vol
 
-from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
+from homeassistant.config_entries import ConfigEntry, ConfigFlow, ConfigFlowResult, OptionsFlow
 from homeassistant.const import CONF_PASSWORD, CONF_URL, CONF_USERNAME, CONF_VERIFY_SSL
-from homeassistant.helpers.selector import TextSelector, TextSelectorConfig, TextSelectorType
+from homeassistant.core import callback
+from homeassistant.helpers.selector import (
+    NumberSelector,
+    NumberSelectorConfig,
+    NumberSelectorMode,
+    TextSelector,
+    TextSelectorConfig,
+    TextSelectorType,
+)
 
 from . import client_from_config
 from .api import RyotAuthError, RyotConnectionError, RyotError, RyotUser
-from .const import CONF_API_TOKEN, DOMAIN
+from .const import CONF_API_TOKEN, CONF_WEEKLY_GOAL, DEFAULT_WEEKLY_GOAL, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -46,6 +54,11 @@ def _clean(data: Mapping[str, Any]) -> dict[str, Any]:
 
 class RyotConfigFlow(ConfigFlow, domain=DOMAIN):
     VERSION = 1
+
+    @staticmethod
+    @callback
+    def async_get_options_flow(config_entry: ConfigEntry) -> RyotOptionsFlow:
+        return RyotOptionsFlow()
 
     async def _validate(self, data: dict[str, Any]) -> tuple[RyotUser | None, dict[str, str]]:
         if not data.get(CONF_API_TOKEN) and not data.get(CONF_USERNAME):
@@ -94,4 +107,19 @@ class RyotConfigFlow(ConfigFlow, domain=DOMAIN):
             data_schema=vol.Schema(_AUTH_FIELDS),
             description_placeholders={"url": entry.data[CONF_URL]},
             errors=errors,
+        )
+
+
+class RyotOptionsFlow(OptionsFlow):
+    async def async_step_init(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+        if user_input is not None:
+            return self.async_create_entry(data={CONF_WEEKLY_GOAL: int(user_input[CONF_WEEKLY_GOAL])})
+        goal = self.config_entry.options.get(CONF_WEEKLY_GOAL, DEFAULT_WEEKLY_GOAL)
+        return self.async_show_form(
+            step_id="init",
+            data_schema=vol.Schema({
+                vol.Required(CONF_WEEKLY_GOAL, default=goal): NumberSelector(
+                    NumberSelectorConfig(min=1, max=14, step=1, mode=NumberSelectorMode.BOX)
+                ),
+            }),
         )

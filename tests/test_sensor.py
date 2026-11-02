@@ -48,13 +48,11 @@ async def test_sensors_from_seeded_data(hass: HomeAssistant, seeded_user):
         "last_workout_name": ("Push day", None),
         "last_workout_duration": ("45.0", "min"),
         "last_workout_volume": ("980.0", "kg"),
-        "last_workout_calories": ("320.0", "kcal"),
         "total_workouts": ("4", None),
         "workouts_7d": ("2", None),
         "active_days_7d": ("2", None),
         "minutes_7d": ("75.0", "min"),
         "volume_7d": ("2480.0", "kg"),
-        "calories_7d": ("520", "kcal"),
         "workouts_30d": ("3", None),
         "minutes_30d": ("135.0", "min"),
         "volume_30d": ("3480.0", "kg"),
@@ -68,7 +66,18 @@ async def test_sensors_from_seeded_data(hass: HomeAssistant, seeded_user):
     assert hass.states.get(_eid(hass, entry, "workouts_7d")).name.endswith("Workouts (7d)")
     assert hass.states.get(_eid(hass, entry, "measurement_body_fat")).name.endswith("Body fat")
     # Off by default.
-    assert er.async_get(hass).async_get(_eid(hass, entry, "reps_7d")).disabled_by is not None
+    for key in ("reps_7d", "calories_7d", "last_workout_calories"):
+        assert er.async_get(hass).async_get(_eid(hass, entry, key)).disabled_by is not None, key
+
+    assert _state(hass, entry, "days_since_last_workout").state == "1"
+    assert _state(hass, entry, "best_weekly_goal_streak").state == "0"  # never 3 in one week
+    week = _state(hass, entry, "workouts_this_week")
+    assert week.attributes["goal"] == 3
+    assert len(week.attributes["weeks"]) == 52
+    assert sum(w["workouts"] for w in week.attributes["weeks"]) == 4
+    months = _state(hass, entry, "workouts_this_month").attributes["months"]
+    assert sum(m["workouts"] for m in months) == 4
+    assert _state(hass, entry, "weekly_goal_streak").attributes["unit_of_measurement"] == "w"
 
 
 async def test_empty_account(hass: HomeAssistant, ryot_user):
@@ -131,3 +140,25 @@ async def test_imperial_units(hass: HomeAssistant, seeded_user, monkeypatch):
     assert _state(hass, entry, "measurement_weight").attributes["unit_of_measurement"] == "lb"
     # HA must not have converted the number.
     assert _state(hass, entry, "volume_7d").state == "2480.0"
+
+
+async def test_options_goal_and_incremental_history(hass: HomeAssistant, seeded_user):
+    entry = await _setup(hass, seeded_user)
+    # Goal 1/week: the seeded workouts sit in at least 3 distinct weeks.
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    result = await hass.config_entries.options.async_configure(result["flow_id"], {"weekly_goal": 1})
+    assert entry.options == {"weekly_goal": 1}
+    await hass.async_block_till_done()
+    assert _state(hass, entry, "workouts_this_week").attributes["goal"] == 1
+    assert int(_state(hass, entry, "best_weekly_goal_streak").state) >= 1
+
+    # A poll that isn't the daily full refresh keeps old history and adds new.
+    coordinator = entry.runtime_data
+    before = len(coordinator._history)
+    add_workout(seeded_user, days_ago=0.01, minutes=20, sets=[(10, 10)], name="Just now")
+    await coordinator.async_refresh()
+    await hass.async_block_till_done()
+    assert len(coordinator._history) == before + 1
+    assert any(w.name == "Ancient" for w in coordinator._history)  # 40 days old, outside the window
+    months = _state(hass, entry, "workouts_this_month").attributes["months"]
+    assert sum(m["workouts"] for m in months) == 5

@@ -86,7 +86,7 @@ def _window_sensors(key: str, days: int, pick: Callable[[RyotData], WindowStats]
         d("volume", unit_fn=_mass, device_class=SensorDeviceClass.WEIGHT),
         d("reps", entity_registry_enabled_default=False),
         d("distance", unit_fn=_length, device_class=SensorDeviceClass.DISTANCE, entity_registry_enabled_default=False),
-        d("calories", native_unit_of_measurement=KCAL),
+        d("calories", native_unit_of_measurement=KCAL, entity_registry_enabled_default=False),
         d("personal_bests"),
     ]
 
@@ -122,6 +122,7 @@ SENSORS: list[RyotSensorDescription] = [
         key="last_workout_calories",
         translation_key="last_workout_calories",
         native_unit_of_measurement=KCAL,
+        entity_registry_enabled_default=False,
         value_fn=_last("calories"),
     ),
     RyotSensorDescription(
@@ -129,6 +130,46 @@ SENSORS: list[RyotSensorDescription] = [
         translation_key="total_workouts",
         state_class=SensorStateClass.TOTAL_INCREASING,
         value_fn=lambda data: data.total_workouts,
+    ),
+    RyotSensorDescription(
+        key="workouts_this_week",
+        translation_key="workouts_this_week",
+        state_class=SensorStateClass.MEASUREMENT,
+        value_fn=lambda data: data.goal.this_week,
+        attrs_fn=lambda data: {
+            "goal": data.goal.goal,
+            "remaining": max(0, data.goal.goal - data.goal.this_week),
+            "weeks": data.goal.weeks,
+        },
+    ),
+    RyotSensorDescription(
+        key="workouts_this_month",
+        translation_key="workouts_this_month",
+        state_class=SensorStateClass.MEASUREMENT,
+        value_fn=lambda data: data.goal.this_month,
+        attrs_fn=lambda data: {"months": data.goal.months},
+    ),
+    RyotSensorDescription(
+        key="weekly_goal_streak",
+        translation_key="weekly_goal_streak",
+        native_unit_of_measurement=UnitOfTime.WEEKS,
+        state_class=SensorStateClass.MEASUREMENT,
+        value_fn=lambda data: data.goal.streak,
+        attrs_fn=lambda data: {"goal": data.goal.goal},
+    ),
+    RyotSensorDescription(
+        key="best_weekly_goal_streak",
+        translation_key="best_weekly_goal_streak",
+        native_unit_of_measurement=UnitOfTime.WEEKS,
+        state_class=SensorStateClass.MEASUREMENT,
+        value_fn=lambda data: data.goal.best_streak,
+    ),
+    RyotSensorDescription(
+        key="days_since_last_workout",
+        translation_key="days_since_last_workout",
+        native_unit_of_measurement=UnitOfTime.DAYS,
+        state_class=SensorStateClass.MEASUREMENT,
+        value_fn=lambda data: data.goal.days_since_last,
     ),
     *_window_sensors("7d", WINDOW_SHORT_DAYS, lambda data: data.short),
     *_window_sensors("30d", WINDOW_LONG_DAYS, lambda data: data.long),
@@ -174,6 +215,8 @@ class RyotEntity(CoordinatorEntity[RyotCoordinator]):
 
 class RyotSensor(RyotEntity, SensorEntity):
     entity_description: RyotSensorDescription
+    # Derived from Ryot on every poll; no point storing copies in the recorder.
+    _unrecorded_attributes = frozenset({"weeks", "months"})
 
     def __init__(self, coordinator: RyotCoordinator, description: RyotSensorDescription) -> None:
         super().__init__(coordinator, description.key)
