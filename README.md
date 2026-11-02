@@ -24,7 +24,7 @@ between fetch only the last 30 days. Windows are rolling (last 7 / 30 days from
 now). The weekly goal (default 3) is set under the integration's *Configure*.
 
 The `weeks` / `months` history attributes are excluded from the recorder (Ryot
-is their source of truth), so long-term charts read them live. Every sensor has
+is their source of truth), so long-term charts read them live. Every numeric sensor has
 a state class, so HA keeps long-term statistics for all of them.
 
 | Sensor | Notes |
